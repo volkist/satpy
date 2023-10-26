@@ -490,6 +490,13 @@ def add_scanline_acq_time(dataset, acq_time):
     dataset.coords['acq_time'].attrs[
         'long_name'] = 'Mean scanline acquisition time'
 
+def add_scanline_rad_quality(dataset, rad_quality):
+    """Add scanline radiometric quality  to the given dataset."""
+    dataset.coords['rad_quality'] = ('y', rad_quality)
+    dataset.coords['rad_quality'].attrs[
+        'long_name'] = 'scanline radiometric quality'
+
+
 
 def dec10216(inbuf):
     """Decode 10 bits data into 16 bits words.

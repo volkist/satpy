@@ -241,6 +241,7 @@ from satpy.readers.seviri_base import (
     OrbitPolynomialFinder,
     SEVIRICalibrationHandler,
     add_scanline_acq_time,
+    add_scanline_rad_quality,
     create_coef_dict,
     get_cds_time,
     get_satpos,
@@ -330,7 +331,7 @@ class HRITMSGPrologueFileHandler(HRITMSGPrologueEpilogueBase):
 
     def __init__(self, filename, filename_info, filetype_info, calib_mode='nominal',
                  ext_calib_coefs=None, include_raw_metadata=False,
-                 mda_max_array_size=None, fill_hrv=None, mask_bad_quality_scan_lines=None):
+                 mda_max_array_size=None, fill_hrv=None, mask_bad_quality_scan_lines=None, include_line_rad_quality=None):
         """Initialize the reader."""
         super(HRITMSGPrologueFileHandler, self).__init__(filename, filename_info,
                                                          filetype_info,
@@ -401,7 +402,7 @@ class HRITMSGEpilogueFileHandler(HRITMSGPrologueEpilogueBase):
 
     def __init__(self, filename, filename_info, filetype_info, calib_mode='nominal',
                  ext_calib_coefs=None, include_raw_metadata=False,
-                 mda_max_array_size=None, fill_hrv=None, mask_bad_quality_scan_lines=None):
+                 mda_max_array_size=None, fill_hrv=None, mask_bad_quality_scan_lines=None, include_line_rad_quality=None):
         """Initialize the reader."""
         super(HRITMSGEpilogueFileHandler, self).__init__(filename, filename_info,
                                                          filetype_info,
@@ -457,7 +458,8 @@ class HRITMSGFileHandler(HRITFileHandler):
                  prologue, epilogue, calib_mode='nominal',
                  ext_calib_coefs=None, include_raw_metadata=False,
                  mda_max_array_size=100, fill_hrv=True,
-                 mask_bad_quality_scan_lines=True):
+                 mask_bad_quality_scan_lines=True,
+                 include_line_rad_quality=False):
         """Initialize the reader."""
         super(HRITMSGFileHandler, self).__init__(filename, filename_info,
                                                  filetype_info,
@@ -476,6 +478,7 @@ class HRITMSGFileHandler(HRITFileHandler):
         self.calib_mode = calib_mode
         self.ext_calib_coefs = ext_calib_coefs or {}
         self.mask_bad_quality_scan_lines = mask_bad_quality_scan_lines
+        self.include_line_rad_quality = include_line_rad_quality
         self._get_header()
 
     def _get_header(self):
@@ -757,6 +760,12 @@ class HRITMSGFileHandler(HRITFileHandler):
         tline = self.mda['image_segment_line_quality']['line_mean_acquisition']
         acq_time = get_cds_time(days=tline['days'], msecs=tline['milliseconds'])
         add_scanline_acq_time(dataset, acq_time)
+
+    def _add_scanline_rad_quality(self, dataset):
+        """Add scanline radiometric quality to the given dataset."""
+        qline = self.mda['image_segment_line_quality']['line_radiometric_quality']
+        add_scanline_rad_quality(dataset, qline)
+
 
     def _update_attrs(self, res, info):
         """Update dataset attributes."""
